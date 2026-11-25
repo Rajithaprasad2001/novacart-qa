@@ -1,0 +1,11 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.coverage
+.pytest_cache/
+*.jtl
+.scannerwork/
+novacart.db
+*.db
+store.db

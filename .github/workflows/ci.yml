@@ -1,0 +1,34 @@
+name: NovaCart CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt -r requirements-test.txt
+      - name: Lint
+        run: flake8 app.py --max-line-length=100
+      - name: Security scan (Bandit)
+        run: bandit -q -r app.py || true
+      - name: Unit / integration / security tests + coverage
+        run: pytest tests --cov=app --cov-branch --cov-report=xml --cov-report=term-missing
+      - name: BDD (behave)
+        run: behave features
+      - name: UI tests (Playwright)
+        run: |
+          playwright install --with-deps chromium
+          pytest tests_ui
+      - name: UI tests (Selenium, headless Chrome)
+        run: pytest tests_selenium -v
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qa-evidence
+          path: |
+            coverage.xml
+            evidence/

@@ -1,0 +1,10 @@
+Flask>=3.0,<4.0
+pytest>=8
+pytest-cov
+behave
+playwright
+flake8
+bandit
+radon
+locust
+selenium

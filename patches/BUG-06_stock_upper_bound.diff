@@ -1,0 +1,14 @@
+--- /tmp/app_orig.py	2026-11-25 09:13:21.022282735 +0530
++++ app.py	2026-11-25 09:13:21.039994237 +0530
+@@ -555,9 +555,9 @@
+     try:
+         stock = int(form.get("stock", ""))
+ 
+-        if stock < 0:
++        if stock < 0 or stock > 1_000_000:
+             errors.append(
+-                "Stock must be a non-negative whole number."
++                "Stock must be a whole number between 0 and 1,000,000."
+             )
+ 
+     except (ValueError, TypeError):
