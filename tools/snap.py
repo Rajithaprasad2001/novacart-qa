@@ -26,19 +26,26 @@ def _read_sonar_creds():
 
 
 def _sonar_login(page):
+    """Log in through SonarQube's web API; the session cookie lands in the
+    browser context, so the following page.goto() is authenticated. This is
+    independent of the login form's markup, which changes between versions."""
     user, pwd = _read_sonar_creds()
-    page.goto(SONAR_BASE + "/sessions/new", wait_until="networkidle")
-    page.fill("input#login", user)
-    page.fill("input#password", pwd)
-    page.click("button[type=submit]")
-    page.wait_for_load_state("networkidle")
-    page.wait_for_timeout(1500)
-    # Dismiss "what's new"/tour pop-ups if present.
+    resp = page.context.request.post(SONAR_BASE + "/api/authentication/login",
+                                     form={"login": user, "password": pwd})
+    if not resp.ok:
+        raise SystemExit(f"SonarQube login failed: HTTP {resp.status}")
+
+
+def _dismiss_popups(page):
+    """Close 'what's new' / onboarding dialogs if SonarQube shows them."""
     for sel in ("button:has-text('Got it')", "button:has-text('Dismiss')",
-                "button[aria-label='Close']"):
+                "button:has-text('Close')", "button[aria-label='Close']",
+                "button[aria-label='Dismiss']"):
         try:
-            if page.locator(sel).first.is_visible(timeout=500):
-                page.locator(sel).first.click()
+            loc = page.locator(sel).first
+            if loc.is_visible(timeout=300):
+                loc.click()
+                page.wait_for_timeout(300)
         except Exception:
             pass
 
@@ -55,6 +62,8 @@ def capture(url, out, full=False, wait_for=None, sonar=False):
         if wait_for:
             page.wait_for_selector(wait_for, timeout=30000)
         page.wait_for_timeout(1500)  # let charts/animations settle
+        if sonar:
+            _dismiss_popups(page)
         page.screenshot(path=out, full_page=full)
         browser.close()
     print(f"saved {out}")
