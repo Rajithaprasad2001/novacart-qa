@@ -555,9 +555,9 @@ def validate_product(form):
     try:
         stock = int(form.get("stock", ""))
 
-        if stock < 0:
+        if stock < 0 or stock > 1_000_000:
             errors.append(
-                "Stock must be a non-negative whole number."
+                "Stock must be a whole number between 0 and 1,000,000."
             )
 
     except (ValueError, TypeError):

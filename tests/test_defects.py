@@ -6,7 +6,7 @@ import pytest
 from conftest import valid_form
 
 
-@pytest.mark.xfail(reason="BUG-06: huge stock integer -> OverflowError -> HTTP 500", strict=True)
+# BUG-06 fixed (issue #6): this is now a normal regression test.
 def test_huge_stock_value_is_validated(client):
     r = client.post("/admin/products/new", data=valid_form(stock=str(10 ** 30)))
     assert r.status_code == 200 and b"Stock" in r.data
